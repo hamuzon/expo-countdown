@@ -107,7 +107,19 @@ const getInitialState = () => {
     }
   }
 
-  resLang = resLang === "en" || resLang === "ja" ? resLang : "ja";
+  let defaultLang = "en";
+  if (process.client) {
+    if (navigator.language && navigator.language.toLowerCase().startsWith("ja")) {
+      defaultLang = "ja";
+    }
+  } else {
+    const headers = useRequestHeaders(["accept-language"]);
+    if (headers["accept-language"] && headers["accept-language"].toLowerCase().startsWith("ja")) {
+      defaultLang = "ja";
+    }
+  }
+
+  resLang = resLang === "en" || resLang === "ja" ? resLang : defaultLang;
   resYear = (resYear && expoDates[resYear]) ? resYear : findNearestFutureEvent();
 
   return { lang: resLang, year: resYear };
