@@ -10,8 +10,6 @@ import { URL_SETTINGS } from "~/url-scheme.config.js";
 // --- Composables ---
 const route = useRoute();
 const router = useRouter();
-const config = useRuntimeConfig();
-const siteUrl = config.public.siteUrl;
 
 // --- Static Data ---
 const expoDates = {
@@ -150,14 +148,13 @@ const seoData = computed(() => {
     : `Real-time countdown timer for ${eventTitle}. Displays time before, during, and after the event.`;
 
   const resolveBaseUrl = (host) => {
-    if (siteUrl) return siteUrl;
     const hostname = (host || "").replace(/:\d+$/, "");
     if (hostname === "hamuzon.github.io") return "https://hamuzon.github.io/expo-countdown";
     if (hostname.includes("hamuzon-jp.f5.si")) return `https://${hostname}`;
     return `https://${hostname}`;
   };
 
-  const host = requestUrl.host || "";
+  const host = requestUrl.host;
   const baseUrl = resolveBaseUrl(host);
   const prettyUrl = `${baseUrl}/${currentYearKey.value}/${lang.value}`;
 
