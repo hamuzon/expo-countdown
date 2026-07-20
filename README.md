@@ -2,4 +2,4 @@
 
 expo counter Code
 
-<https://hamuzon.github.io/expo-countdown/>
+[hamuzon.github.io/expo-countdown](https://hamuzon.github.io/expo-countdown)
