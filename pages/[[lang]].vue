@@ -87,11 +87,6 @@ const getInitialState = () => {
     if (navigator.language && navigator.language.toLowerCase().startsWith("ja")) {
       defaultLang = "ja";
     }
-  } else {
-    const headers = useRequestHeaders(["accept-language"]);
-    if (headers["accept-language"] && headers["accept-language"].toLowerCase().startsWith("ja")) {
-      defaultLang = "ja";
-    }
   }
 
   resLang = resLang === "en" || resLang === "ja" ? resLang : defaultLang;
@@ -156,7 +151,7 @@ const seoData = computed(() => {
 
   const host = requestUrl.host;
   const baseUrl = resolveBaseUrl(host);
-  const prettyUrl = `${baseUrl}/${currentYearKey.value}/${lang.value}/`;
+  const prettyUrl = `${baseUrl}/${currentYearKey.value}/${lang.value}`;
 
   return { title, description, url: prettyUrl, locale: isJa ? "ja_JP" : "en_US", cityName };
 });
