@@ -48,9 +48,9 @@ export default defineNuxtConfig({
     prerender: {
       routes: [
         '/',
-        '/2025/ja/', '/2025/en/',
-        '/2027/ja/', '/2027/en/',
-        '/2030/ja/', '/2030/en/',
+        '/2025/ja', '/2025/en',
+        '/2027/ja', '/2027/en',
+        '/2030/ja', '/2030/en',
       ]
     }
   },

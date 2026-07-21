@@ -29,7 +29,7 @@ const getFallbackYear = () => {
   return EXPO_YEARS[futureIndex >= 0 ? futureIndex : EXPO_YEARS.length - 1];
 };
 
-const buildCanonicalPath = (year: string, lang: string) => `/${year}/${lang}/`;
+const buildCanonicalPath = (year: string, lang: string) => `/${year}/${lang}`;
 
 const stripBasePath = (path: string, baseURL: string) => {
   const normalizedBase = baseURL.endsWith("/") ? baseURL.slice(0, -1) : baseURL;
@@ -83,7 +83,9 @@ export default defineNuxtRouteMiddleware((to) => {
     to.query.clearPath || to.query.clearpath,
   );
 
-  if (relativePath === targetPath && !hasLegacyHints) return;
+  // Normalize trailing slash for comparison (Cloudflare adds / for HTML files)
+  const normalizedPath = relativePath.endsWith("/") ? relativePath.slice(0, -1) : relativePath;
+  if (normalizedPath === targetPath && !hasLegacyHints) return;
 
   return navigateTo(
     { path: targetPath, query: cleanedQuery, hash: to.hash },
