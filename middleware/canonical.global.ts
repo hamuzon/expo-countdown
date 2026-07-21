@@ -29,7 +29,7 @@ const getFallbackYear = () => {
   return EXPO_YEARS[futureIndex >= 0 ? futureIndex : EXPO_YEARS.length - 1];
 };
 
-const buildCanonicalPath = (year: string, lang: string) => `/${year}/${lang}`;
+const buildCanonicalPath = (year: string, lang: string) => `/${year}/${lang}/`;
 
 const stripBasePath = (path: string, baseURL: string) => {
   const normalizedBase = baseURL.endsWith("/") ? baseURL.slice(0, -1) : baseURL;

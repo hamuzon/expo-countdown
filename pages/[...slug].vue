@@ -178,7 +178,7 @@ const seoData = computed(() => {
 
   const host = requestUrl.host;
   const baseUrl = resolveBaseUrl(host);
-  const prettyUrl = `${baseUrl}/${currentYearKey.value}/${lang.value}`;
+  const prettyUrl = `${baseUrl}/${currentYearKey.value}/${lang.value}/`;
 
   return { title, description, url: prettyUrl, locale: isJa ? "ja_JP" : "en_US" };
 });
@@ -221,7 +221,7 @@ function toggleView() {
 }
 
 function buildCanonicalPath(year, language) {
-  return `/${year}/${language}`;
+  return `/${year}/${language}/`;
 }
 
 function updateRoute() {
