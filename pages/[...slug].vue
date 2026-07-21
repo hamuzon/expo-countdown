@@ -216,7 +216,7 @@ function toggleView() {
 }
 
 function buildCanonicalPath(year, language) {
-  return `/${year}/${language}/`;
+  return `/${year}/${language}`;
 }
 
 function updateRoute() {
