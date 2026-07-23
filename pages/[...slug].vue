@@ -170,9 +170,16 @@ const seoData = computed(() => {
 
   const resolveBaseUrl = (host) => {
     const hostname = (host || "").replace(/:\d+$/, "");
-    if (hostname === "hamuzon.github.io") return "https://hamuzon.github.io/expo-countdown";
-    if (hostname.includes("hamuzon-jp.f5.si")) return `https://${hostname}`;
-    return `https://${hostname}`;
+    if (hostname === "hamuzon.github.io") {
+      return "https://hamuzon.github.io/expo-countdown";
+    }
+    if (hostname.startsWith("expo-countdown.")) {
+      return `https://${hostname}`;
+    }
+    if (hostname === "hamusata.f5.si" || hostname.includes("hamuzon-jp.f5.si")) {
+      return `https://expo-countdown.${hostname}`;
+    }
+    return `https://${hostname}`; // Fallback for other domains
   };
 
   const host = requestUrl.host;
