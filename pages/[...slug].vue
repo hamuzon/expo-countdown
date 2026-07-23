@@ -1,7 +1,7 @@
 <script setup>
 /**
  * Expo Countdown – Slug page [...slug].vue
- * Handles: /year/lang  e.g. /2025/ja, /2027/en
+ * Handles: /year/lang/  e.g. /2025/ja/, /2027/en/
  * Optimized for SSG/SEO with useSeoMeta.
  */
 import { ref, onMounted, onUnmounted, computed } from "vue";
@@ -173,7 +173,7 @@ const seoData = computed(() => {
 
   const host = requestUrl.host;
   const baseUrl = resolveBaseUrl(host);
-  const prettyUrl = `${baseUrl}/${currentYearKey.value}/${lang.value}`;
+  const prettyUrl = `${baseUrl}/${currentYearKey.value}/${lang.value}/`;
 
   return { title, description, url: prettyUrl, locale: isJa ? "ja_JP" : "en_US" };
 });
@@ -216,7 +216,7 @@ function toggleView() {
 }
 
 function buildCanonicalPath(year, language) {
-  return `/${year}/${language}`;
+  return `/${year}/${language}/`;
 }
 
 function updateRoute() {
