@@ -70,9 +70,15 @@ const normalizeParam = (value) => {
 const getInitialState = () => {
   const q = route.query;
   const createPathValue = q.createPath || q.createpath || q.clearPath || q.clearpath;
+
+  // --- Start of change: Read year/lang from path ---
+  const pathParts = route.path.split('/').filter(Boolean);
+  const yearFromPath = pathParts.find(p => /^\d{4}$/.test(p) && expoDates[p]);
+  const langFromPath = pathParts.find(p => p === 'ja' || p === 'en');
+  // --- End of change ---
   const fromCreatePath = parseCreatePath(createPathValue);
-  let resYear = normalizeParam(q.year) || fromCreatePath.year;
-  let resLang = normalizeParam(q.lang) || fromCreatePath.lang || route.params.lang;
+  let resYear = normalizeParam(q.year) || fromCreatePath.year || yearFromPath;
+  let resLang = normalizeParam(q.lang) || fromCreatePath.lang || langFromPath || route.params.lang;
 
   if (process.client) {
     const reset = /^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart));
