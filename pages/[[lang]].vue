@@ -162,15 +162,15 @@ const seoData = computed(() => {
 
 useSeoMeta({
   title: () => seoData.value?.title,
-  ogTitle: () => seoData.value?.title,
-  keywords: () => seoData.value?.keywords,
   description: () => seoData.value?.description,
+  // og:url is removed to let Nuxt handle it, avoiding localhost issues.
+  ogTitle: () => seoData.value?.title,
   ogDescription: () => seoData.value?.description,
-  ogUrl: () => seoData.value?.url,
   ogLocale: () => seoData.value?.locale,
   twitterTitle: () => seoData.value?.title,
   twitterDescription: () => seoData.value?.description,
   twitterCard: "summary",
+  meta: [{ name: 'keywords', content: () => seoData.value?.keywords }],
 });
 
 // Canonical link removed as requested
