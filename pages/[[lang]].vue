@@ -16,18 +16,21 @@ const expoDates = {
   2025: {
     title: { ja: "2025大阪・関西万博", en: "Expo 2025 Osaka, Kansai, Japan" },
     city: { ja: "大阪", en: "Osaka" },
+    keywords: { ja: "大阪万博, 関西万博, 夢洲", en: "Osaka Expo, Kansai Expo" },
     start: "2025-04-13T10:00:00+09:00",
     end: "2025-10-13T20:00:00+09:00",
   },
   2027: {
     title: { ja: "2027年国際園芸博覧会(横浜万博)", en: "International Horticultural Expo 2027, Yokohama" },
     city: { ja: "横浜", en: "Yokohama" },
+    keywords: { ja: "花博, 国際園芸博覧会", en: "Horticultural Expo" },
     start: "2027-03-19T00:00:00+09:00",
     end: "2027-09-26T00:00:00+09:00",
   },
   2030: {
     title: { ja: "2030リヤド万博", en: "Expo 2030 Riyadh" },
     city: { ja: "リヤド", en: "Riyadh" },
+    keywords: { ja: "サウジアラビア, リヤド万博", en: "Riyadh Expo, Saudi Arabia" },
     start: "2030-10-01T00:00:00+03:00",
     end: "2031-03-31T00:00:00+03:00",
   },
@@ -135,6 +138,7 @@ const seoData = computed(() => {
   const isJa = lang.value === "ja";
   const cityName = event.city?.[lang.value] || "";
   const eventTitle = event.title?.[lang.value] || "";
+  const eventKeywords = event.keywords?.[lang.value] || "";
   const title = isJa
     ? `${eventTitle} カウントダウン`
     : `${eventTitle} – Countdown`;
@@ -153,12 +157,13 @@ const seoData = computed(() => {
   const baseUrl = resolveBaseUrl(host);
   const prettyUrl = `${baseUrl}/${currentYearKey.value}/${lang.value}/`;
 
-  return { title, description, url: prettyUrl, locale: isJa ? "ja_JP" : "en_US", cityName };
+  return { title, description, url: prettyUrl, locale: isJa ? "ja_JP" : "en_US", cityName, keywords: eventKeywords };
 });
 
 useSeoMeta({
   title: () => seoData.value?.title,
   ogTitle: () => seoData.value?.title,
+  keywords: () => seoData.value?.keywords,
   description: () => seoData.value?.description,
   ogDescription: () => seoData.value?.description,
   ogUrl: () => seoData.value?.url,
