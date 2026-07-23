@@ -16,21 +16,21 @@ const expoDates = {
   2025: {
     title: { ja: "2025大阪・関西万博", en: "Expo 2025 Osaka, Kansai, Japan" },
     city: { ja: "大阪", en: "Osaka" },
-    keywords: { ja: "大阪万博, 関西万博, 夢洲", en: "Osaka Expo, Kansai Expo" },
+    keywords: { ja: "大阪万博, 関西万博, 夢洲, Expo 2025", en: "Osaka Expo, Kansai Expo, Yumeshima, Expo 2025" },
     start: "2025-04-13T10:00:00+09:00",
     end: "2025-10-13T20:00:00+09:00",
   },
   2027: {
     title: { ja: "2027年国際園芸博覧会(横浜万博)", en: "International Horticultural Expo 2027, Yokohama" },
     city: { ja: "横浜", en: "Yokohama" },
-    keywords: { ja: "花博, 国際園芸博覧会", en: "Horticultural Expo" },
+    keywords: { ja: "横浜万博, 花博, 国際園芸博覧会, Expo 2027", en: "Yokohama Expo, Horticultural Expo, Expo 2027" },
     start: "2027-03-19T00:00:00+09:00",
     end: "2027-09-26T00:00:00+09:00",
   },
   2030: {
     title: { ja: "2030リヤド万博", en: "Expo 2030 Riyadh" },
     city: { ja: "リヤド", en: "Riyadh" },
-    keywords: { ja: "サウジアラビア, リヤド万博", en: "Riyadh Expo, Saudi Arabia" },
+    keywords: { ja: "リヤド万博, サウジアラビア, Expo 2030", en: "Riyadh Expo, Saudi Arabia, Expo 2030" },
     start: "2030-10-01T00:00:00+03:00",
     end: "2031-03-31T00:00:00+03:00",
   },
@@ -148,9 +148,16 @@ const seoData = computed(() => {
 
   const resolveBaseUrl = (host) => {
     const hostname = (host || "").replace(/:\d+$/, "");
-    if (hostname === "hamuzon.github.io") return "https://hamuzon.github.io/expo-countdown";
-    if (hostname.includes("hamuzon-jp.f5.si")) return `https://${hostname}`;
-    return `https://${hostname}`;
+    if (hostname === "hamuzon.github.io") {
+      return "https://hamuzon.github.io/expo-countdown";
+    }
+    if (hostname.startsWith("expo-countdown.")) {
+      return `https://${hostname}`;
+    }
+    if (hostname === "hamusata.f5.si" || hostname.includes("hamuzon-jp.f5.si")) {
+      return `https://expo-countdown.${hostname}`;
+    }
+    return `https://${hostname}`; // Fallback for other domains
   };
 
   const host = requestUrl.host;
@@ -163,9 +170,9 @@ const seoData = computed(() => {
 useSeoMeta({
   title: () => seoData.value?.title,
   description: () => seoData.value?.description,
-  // og:url is removed to let Nuxt handle it, avoiding localhost issues.
   ogTitle: () => seoData.value?.title,
   ogDescription: () => seoData.value?.description,
+  ogUrl: () => seoData.value?.url,
   ogLocale: () => seoData.value?.locale,
   twitterTitle: () => seoData.value?.title,
   twitterDescription: () => seoData.value?.description,
