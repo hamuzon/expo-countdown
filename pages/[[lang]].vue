@@ -21,7 +21,7 @@ const expoDates = {
     end: "2025-10-13T20:00:00+09:00",
   },
   2027: {
-    title: { ja: "2027年国際園芸博覧会(横浜万博)", en: "International Horticultural Expo 2027, Yokohama" },
+    title: { ja: "2027年国際園芸博覧会<br>(横浜万博[花博])", en: "Horticultural Expo 2027<br>Yokohama (Flower Expo)" },
     city: { ja: "横浜", en: "Yokohama" },
     keywords: { ja: "横浜万博, 花博, 国際園芸博覧会, Expo 2027", en: "Yokohama Expo, Horticultural Expo, Expo 2027" },
     start: "2027-03-19T00:00:00+09:00",
@@ -143,7 +143,8 @@ const seoData = computed(() => {
 
   const isJa = lang.value === "ja";
   const cityName = event.city?.[lang.value] || "";
-  const eventTitle = event.title?.[lang.value] || "";
+  const rawTitle = event.title?.[lang.value] || "";
+  const eventTitle = rawTitle.replace(/<br\s*\/?>/gi, " ");
   const eventKeywords = event.keywords?.[lang.value] || "";
   const title = isJa
     ? `${eventTitle} カウントダウン`
@@ -320,7 +321,7 @@ onUnmounted(() => {
       {{ lang === "ja" ? "日目／年月日切替" : "Day / YMD Toggle" }}
     </button>
 
-    <h1 id="title">{{ eventTitle }}</h1>
+    <h1 id="title" v-html="eventTitle"></h1>
     <h2 id="subtitle">{{ subtitleText }}</h2>
 
     <CountdownDisplay
@@ -355,6 +356,8 @@ h1 {
   color: transparent;
   text-shadow: 0 0 8px rgba(255,255,255,0.3), 0 0 20px rgba(255,255,255,0.2);
   margin-bottom: 0.3rem;
+  word-break: auto-phrase;
+  line-height: 1.3;
 }
 
 h2 {
@@ -404,7 +407,7 @@ h2 {
 
 @media(max-width:480px){
   .container{padding:2rem 2rem; max-width:320px;}
-  h1{font-size:2rem;}
+  h1{font-size:1.6rem;}
   h2{font-size:1rem;margin-bottom:1.5rem;}
 }
 </style>
