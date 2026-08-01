@@ -98,9 +98,10 @@ const getInitialState = () => {
   const createPathValue = q.createPath || q.createpath || q.clearPath || q.clearpath;
   const fromCreatePath = parseCreatePath(createPathValue);
 
-  // Explicit params (slug / URL query / createPath) take priority over localStorage
-  const explicitYear = parsedSlug.year || normalizeParam(q.year) || fromCreatePath.year;
-  const explicitLang = parsedSlug.lang || normalizeParam(q.lang) || fromCreatePath.lang;
+  // Explicit params take priority over localStorage
+  // Priority: 1. fromCreatePath, 2. slug, 3. URL query
+  const explicitYear = fromCreatePath.year || parsedSlug.year || normalizeParam(q.year);
+  const explicitLang = fromCreatePath.lang || parsedSlug.lang || normalizeParam(q.lang);
 
   let resYear = explicitYear;
   let resLang = explicitLang;
