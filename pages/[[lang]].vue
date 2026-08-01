@@ -71,19 +71,24 @@ const getInitialState = () => {
   const q = route.query;
   const createPathValue = q.createPath || q.createpath || q.clearPath || q.clearpath;
 
-  // --- Start of change: Read year/lang from path ---
+  // Read year/lang from path
   const pathParts = route.path.split('/').filter(Boolean);
   const yearFromPath = pathParts.find(p => /^\d{4}$/.test(p) && expoDates[p]);
   const langFromPath = pathParts.find(p => p === 'ja' || p === 'en');
-  // --- End of change ---
   const fromCreatePath = parseCreatePath(createPathValue);
-  let resYear = normalizeParam(q.year) || fromCreatePath.year || yearFromPath;
-  let resLang = normalizeParam(q.lang) || fromCreatePath.lang || langFromPath || route.params.lang;
+
+  // Explicit params (URL query / createPath / path) take priority over localStorage
+  const explicitYear = normalizeParam(q.year) || fromCreatePath.year || yearFromPath;
+  const explicitLang = normalizeParam(q.lang) || fromCreatePath.lang || langFromPath || route.params.lang;
+
+  let resYear = explicitYear;
+  let resLang = explicitLang;
 
   if (process.client) {
     const reset = /^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart));
     if (!reset) {
-      resLang = resLang || localStorage.getItem("expoCountdownLang");
+      // Fall back to localStorage only when not explicitly specified
+      if (!resLang) resLang = localStorage.getItem("expoCountdownLang");
       if (!resYear) {
         const sYear = localStorage.getItem("expoCountdownYear");
         if (sYear && expoDates[sYear]) resYear = sYear;
@@ -100,6 +105,12 @@ const getInitialState = () => {
 
   resLang = resLang === "en" || resLang === "ja" ? resLang : defaultLang;
   resYear = (resYear && expoDates[resYear]) ? resYear : findNearestFutureEvent();
+
+  // Save resolved state to localStorage immediately so it persists
+  if (process.client) {
+    localStorage.setItem("expoCountdownLang", resLang);
+    localStorage.setItem("expoCountdownYear", resYear);
+  }
 
   return { lang: resLang, year: resYear };
 };
@@ -287,8 +298,6 @@ const noticeText = computed(() => texts[lang.value].notice);
 // --- Lifecycle ---
 onMounted(() => {
   if (process.client) {
-    localStorage.setItem("expoCountdownLang", lang.value);
-    localStorage.setItem("expoCountdownYear", currentYearKey.value);
     updateRoute();
   }
   updateCountdown();

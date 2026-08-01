@@ -97,11 +97,17 @@ const getInitialState = () => {
   const q = route.query;
   const createPathValue = q.createPath || q.createpath || q.clearPath || q.clearpath;
   const fromCreatePath = parseCreatePath(createPathValue);
-  let resYear = parsedSlug.year || normalizeParam(q.year) || fromCreatePath.year;
-  let resLang = parsedSlug.lang || normalizeParam(q.lang) || fromCreatePath.lang;
+
+  // Explicit params (slug / URL query / createPath) take priority over localStorage
+  const explicitYear = parsedSlug.year || normalizeParam(q.year) || fromCreatePath.year;
+  const explicitLang = parsedSlug.lang || normalizeParam(q.lang) || fromCreatePath.lang;
+
+  let resYear = explicitYear;
+  let resLang = explicitLang;
 
   if (process.client && !/^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart))) {
-    resLang = resLang || localStorage.getItem("expoCountdownLang");
+    // Fall back to localStorage only when not explicitly specified
+    if (!resLang) resLang = localStorage.getItem("expoCountdownLang");
     if (!resYear) {
       const sYear = localStorage.getItem("expoCountdownYear");
       if (sYear && expoDates[sYear]) resYear = sYear;
@@ -117,6 +123,12 @@ const getInitialState = () => {
 
   resLang = resLang === "en" || resLang === "ja" ? resLang : defaultLang;
   resYear = (resYear && expoDates[resYear]) ? resYear : findNearestFutureEvent();
+
+  // Save resolved state to localStorage immediately so it persists
+  if (process.client) {
+    localStorage.setItem("expoCountdownLang", resLang);
+    localStorage.setItem("expoCountdownYear", resYear);
+  }
 
   return { lang: resLang, year: resYear };
 };
@@ -303,8 +315,6 @@ const noticeText = computed(() => texts[lang.value].notice);
 // --- Lifecycle ---
 onMounted(() => {
   if (process.client) {
-    localStorage.setItem("expoCountdownLang", lang.value);
-    localStorage.setItem("expoCountdownYear", currentYearKey.value);
     updateRoute();
   }
   updateCountdown();
