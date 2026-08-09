@@ -4,7 +4,7 @@
  * Handles: /, /ja, /en
  * Optimized for SSG/SEO with useSeoMeta.
  */
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import { URL_SETTINGS } from "~/url-scheme.config.js";
 
 // --- Composables ---
@@ -336,6 +336,22 @@ onMounted(() => {
   updateCountdown();
   timerId = setInterval(updateCountdown, 1000);
 });
+
+// Watch for route changes and update state accordingly
+watch(
+  () => ({ path: route.path, query: route.query }),
+  () => {
+    // Re-initialize state when route or query params change
+    const newState = getInitialState();
+    lang.value = newState.lang;
+    currentYearKey.value = newState.year;
+    updateCountdown();
+    if (process.client) {
+      updateRoute();
+    }
+  },
+  { deep: true }
+);
 
 onUnmounted(() => {
   if (timerId) clearInterval(timerId);
