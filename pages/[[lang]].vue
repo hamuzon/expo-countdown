@@ -259,12 +259,16 @@ function updateRoute() {
   if (CONFIG.URL_SCHEME === "path") {
     const targetPath = buildCanonicalPath(targetYear, targetLang);
     const q = { ...route.query };
+    
+    // Check if query params year/lang are present (need normalization)
+    const hasYearOrLangQuery = route.query.year || route.query.lang;
+    
+    // Always remove year/lang/legacy params from query for clean URL
     delete q.year; delete q.lang;
     delete q.createPath; delete q.createpath;
     delete q.clearPath; delete q.clearpath;
     
-    // Always redirect if query params year/lang are present (normalize URL)
-    const hasYearOrLangQuery = route.query.year || route.query.lang;
+    // If path is already correct and no year/lang query params, no need to redirect
     if (route.path === targetPath && !hasYearOrLangQuery) return;
     
     router.replace({ path: targetPath, query: q, hash: route.hash });
