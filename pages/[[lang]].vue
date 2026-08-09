@@ -78,9 +78,12 @@ const getInitialState = () => {
   const fromCreatePath = parseCreatePath(createPathValue);
 
   // Explicit params take priority over localStorage
-  // Priority: 1. URL query, 2. fromCreatePath, 3. path/params
-  const explicitYear = normalizeParam(q.year) || fromCreatePath.year || yearFromPath;
-  const explicitLang = normalizeParam(q.lang) || fromCreatePath.lang || langFromPath || route.params.lang;
+  // Priority: 1. URL query params (highest), 2. fromCreatePath, 3. path/params, 4. localStorage
+  const queryYear = normalizeParam(q.year);
+  const queryLang = normalizeParam(q.lang);
+  
+  const explicitYear = queryYear || fromCreatePath.year || yearFromPath;
+  const explicitLang = queryLang || fromCreatePath.lang || langFromPath || route.params.lang;
 
   let resYear = explicitYear;
   let resLang = explicitLang;
@@ -88,9 +91,10 @@ const getInitialState = () => {
   if (process.client) {
     const reset = /^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart));
     if (!reset) {
-      // Fall back to localStorage only when not explicitly specified
-      if (!resLang) resLang = localStorage.getItem("expoCountdownLang");
-      if (!resYear) {
+      // Fall back to localStorage only when NOT explicitly specified via query params
+      // Query params always take priority over localStorage
+      if (!queryLang && !resLang) resLang = localStorage.getItem("expoCountdownLang");
+      if (!queryYear && !resYear) {
         const sYear = localStorage.getItem("expoCountdownYear");
         if (sYear && expoDates[sYear]) resYear = sYear;
       }
@@ -108,9 +112,10 @@ const getInitialState = () => {
   resYear = (resYear && expoDates[resYear]) ? resYear : findNearestFutureEvent();
 
   // Save resolved state to localStorage immediately so it persists
+  // But only if not explicitly set via query params (to prevent overwriting)
   if (process.client) {
-    localStorage.setItem("expoCountdownLang", resLang);
-    localStorage.setItem("expoCountdownYear", resYear);
+    if (!queryLang) localStorage.setItem("expoCountdownLang", resLang);
+    if (!queryYear) localStorage.setItem("expoCountdownYear", resYear);
   }
 
   return { lang: resLang, year: resYear };
