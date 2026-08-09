@@ -66,6 +66,11 @@ const normalizeParam = (value) => {
   return typeof raw === "string" ? raw.trim() : "";
 };
 
+const hasQueryParam = (value) => {
+  if (Array.isArray(value) && value.length > 0) return true;
+  return typeof value === "string" && value.trim() !== "";
+};
+
 // --- Initial State ---
 const getInitialState = () => {
   const q = route.query;
@@ -77,45 +82,58 @@ const getInitialState = () => {
   const langFromPath = pathParts.find(p => p === 'ja' || p === 'en');
   const fromCreatePath = parseCreatePath(createPathValue);
 
-  // Explicit params take priority over localStorage
-  // Priority: 1. URL query params (highest), 2. fromCreatePath, 3. path/params, 4. localStorage
+  // Check if query params explicitly specify year/lang
+  const hasQueryYear = hasQueryParam(q.year);
+  const hasQueryLang = hasQueryParam(q.lang);
+  
   const queryYear = normalizeParam(q.year);
   const queryLang = normalizeParam(q.lang);
   
-  const explicitYear = queryYear || fromCreatePath.year || yearFromPath;
-  const explicitLang = queryLang || fromCreatePath.lang || langFromPath || route.params.lang;
+  // Priority: 1. URL query params (highest), 2. fromCreatePath, 3. path/params, 4. localStorage
+  let resYear, resLang;
 
-  let resYear = explicitYear;
-  let resLang = explicitLang;
-
-  if (process.client) {
-    const reset = /^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart));
-    if (!reset) {
-      // Fall back to localStorage only when NOT explicitly specified via query params
-      // Query params always take priority over localStorage
-      if (!queryLang && !resLang) resLang = localStorage.getItem("expoCountdownLang");
-      if (!queryYear && !resYear) {
+  if (hasQueryYear) {
+    // Query param explicitly set – must use it
+    resYear = queryYear && expoDates[queryYear] ? queryYear : findNearestFutureEvent();
+  } else {
+    resYear = fromCreatePath.year || yearFromPath;
+    if (!resYear && process.client) {
+      const reset = /^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart));
+      if (!reset) {
         const sYear = localStorage.getItem("expoCountdownYear");
         if (sYear && expoDates[sYear]) resYear = sYear;
       }
     }
+    if (!resYear) resYear = findNearestFutureEvent();
   }
 
-  let defaultLang = "en";
-  if (process.client) {
-    if (navigator.language && navigator.language.toLowerCase().startsWith("ja")) {
-      defaultLang = "ja";
+  if (hasQueryLang) {
+    // Query param explicitly set – must use it
+    resLang = queryLang === "en" || queryLang === "ja" ? queryLang : "en";
+  } else {
+    resLang = fromCreatePath.lang || langFromPath || route.params.lang;
+    if (!resLang && process.client) {
+      const reset = /^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart));
+      if (!reset) {
+        resLang = localStorage.getItem("expoCountdownLang");
+      }
     }
   }
 
-  resLang = resLang === "en" || resLang === "ja" ? resLang : defaultLang;
-  resYear = (resYear && expoDates[resYear]) ? resYear : findNearestFutureEvent();
+  if (!resLang) {
+    resLang = "en";
+    if (process.client) {
+      if (navigator.language && navigator.language.toLowerCase().startsWith("ja")) {
+        resLang = "ja";
+      }
+    }
+  }
 
-  // Save resolved state to localStorage immediately so it persists
-  // But only if not explicitly set via query params (to prevent overwriting)
+  // Save resolved state to localStorage immediately
+  // But only if not explicitly set via query params
   if (process.client) {
-    if (!queryLang) localStorage.setItem("expoCountdownLang", resLang);
-    if (!queryYear) localStorage.setItem("expoCountdownYear", resYear);
+    if (!hasQueryLang) localStorage.setItem("expoCountdownLang", resLang);
+    if (!hasQueryYear) localStorage.setItem("expoCountdownYear", resYear);
   }
 
   return { lang: resLang, year: resYear };

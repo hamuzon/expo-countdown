@@ -83,6 +83,11 @@ const normalizeParam = (value) => {
   return typeof raw === "string" ? raw.trim() : "";
 };
 
+const hasQueryParam = (value) => {
+  if (Array.isArray(value) && value.length > 0) return true;
+  return typeof value === "string" && value.trim() !== "";
+};
+
 const parseSlugParts = (slugValue) => {
   const slugParts = Array.isArray(slugValue) ? slugValue.map((p) => normalizeParam(p)) : [];
   const year = slugParts.find((p) => /^\d{4}$/.test(p)) || "";
@@ -98,37 +103,58 @@ const getInitialState = () => {
   const createPathValue = q.createPath || q.createpath || q.clearPath || q.clearpath;
   const fromCreatePath = parseCreatePath(createPathValue);
 
-  // Explicit params take priority over localStorage
-  // Priority: 1. URL query, 2. fromCreatePath, 3. slug
-  const explicitYear = normalizeParam(q.year) || fromCreatePath.year || parsedSlug.year;
-  const explicitLang = normalizeParam(q.lang) || fromCreatePath.lang || parsedSlug.lang;
+  // Check if query params explicitly specify year/lang
+  const hasQueryYear = hasQueryParam(q.year);
+  const hasQueryLang = hasQueryParam(q.lang);
+  
+  const queryYear = normalizeParam(q.year);
+  const queryLang = normalizeParam(q.lang);
+  
+  // Priority: 1. URL query params (highest), 2. fromCreatePath, 3. slug, 4. localStorage
+  let resYear, resLang;
 
-  let resYear = explicitYear;
-  let resLang = explicitLang;
+  if (hasQueryYear) {
+    // Query param explicitly set – must use it
+    resYear = queryYear && expoDates[queryYear] ? queryYear : findNearestFutureEvent();
+  } else {
+    resYear = fromCreatePath.year || parsedSlug.year;
+    if (!resYear && process.client) {
+      const reset = /^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart));
+      if (!reset) {
+        const sYear = localStorage.getItem("expoCountdownYear");
+        if (sYear && expoDates[sYear]) resYear = sYear;
+      }
+    }
+    if (!resYear) resYear = findNearestFutureEvent();
+  }
 
-  if (process.client && !/^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart))) {
-    // Fall back to localStorage only when not explicitly specified
-    if (!resLang) resLang = localStorage.getItem("expoCountdownLang");
-    if (!resYear) {
-      const sYear = localStorage.getItem("expoCountdownYear");
-      if (sYear && expoDates[sYear]) resYear = sYear;
+  if (hasQueryLang) {
+    // Query param explicitly set – must use it
+    resLang = queryLang === "en" || queryLang === "ja" ? queryLang : "en";
+  } else {
+    resLang = fromCreatePath.lang || parsedSlug.lang;
+    if (!resLang && process.client) {
+      const reset = /^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart));
+      if (!reset) {
+        resLang = localStorage.getItem("expoCountdownLang");
+      }
     }
   }
 
-  let defaultLang = "en";
-  if (process.client) {
-    if (navigator.language && navigator.language.toLowerCase().startsWith("ja")) {
-      defaultLang = "ja";
+  if (!resLang) {
+    resLang = "en";
+    if (process.client) {
+      if (navigator.language && navigator.language.toLowerCase().startsWith("ja")) {
+        resLang = "ja";
+      }
     }
   }
 
-  resLang = resLang === "en" || resLang === "ja" ? resLang : defaultLang;
-  resYear = (resYear && expoDates[resYear]) ? resYear : findNearestFutureEvent();
-
-  // Save resolved state to localStorage immediately so it persists
+  // Save resolved state to localStorage immediately
+  // But only if not explicitly set via query params
   if (process.client) {
-    localStorage.setItem("expoCountdownLang", resLang);
-    localStorage.setItem("expoCountdownYear", resYear);
+    if (!hasQueryLang) localStorage.setItem("expoCountdownLang", resLang);
+    if (!hasQueryYear) localStorage.setItem("expoCountdownYear", resYear);
   }
 
   return { lang: resLang, year: resYear };
