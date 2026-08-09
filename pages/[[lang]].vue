@@ -244,7 +244,11 @@ function updateRoute() {
     delete q.year; delete q.lang;
     delete q.createPath; delete q.createpath;
     delete q.clearPath; delete q.clearpath;
-    if (route.path === targetPath && !route.query.year && !route.query.lang) return;
+    
+    // Always redirect if query params year/lang are present (normalize URL)
+    const hasYearOrLangQuery = route.query.year || route.query.lang;
+    if (route.path === targetPath && !hasYearOrLangQuery) return;
+    
     router.replace({ path: targetPath, query: q, hash: route.hash });
     return;
   }
@@ -304,6 +308,7 @@ const noticeText = computed(() => texts[lang.value].notice);
 // --- Lifecycle ---
 onMounted(() => {
   if (process.client) {
+    // Normalize URL on mount (converts ?year=2027&lang=en to /2027/en/)
     updateRoute();
   }
   updateCountdown();
