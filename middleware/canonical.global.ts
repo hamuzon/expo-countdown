@@ -48,13 +48,15 @@ export default defineNuxtRouteMiddleware((to) => {
   const pathParts = relativePath.split("/").filter(Boolean);
 
   // 1. Ignore static files, 404/200 pages, and countdown server endpoints
-  if (
+  const isCountdownEndpoint = Boolean(pathParts[0] && ["count", "c", "days", "d"].includes(pathParts[0]));
+  const isIgnoredPath =
     relativePath === "/404.html" ||
     relativePath === "/404" ||
     relativePath === "/200.html" ||
     relativePath.endsWith(".html") ||
-    ["count", "c", "days", "d"].includes(pathParts[0])
-  ) {
+    isCountdownEndpoint;
+
+  if (isIgnoredPath) {
     return;
   }
 

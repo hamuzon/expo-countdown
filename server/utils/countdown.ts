@@ -50,10 +50,18 @@ export function handleCountdownRequest(
     targetYears = [yearFromPath];
   } else if (yearFromQuery.length) {
     targetYears = yearFromQuery.filter((y) => expoDates[y]);
-  } else if (yearFromPath && !expoDates[yearFromPath]) {
+  }
+
+  const notFoundBody = [
+    "404",
+    "指定年は存在しません",
+    "The specified year does not exist."
+  ].join("\n");
+
+  if (yearFromPath && !expoDates[yearFromPath]) {
     return {
       status: 404,
-      body: lang === "jp" ? "指定年は存在しません" : "The specified year does not exist."
+      body: notFoundBody
     };
   } else {
     targetYears = Object.keys(expoDates);
@@ -62,7 +70,7 @@ export function handleCountdownRequest(
   if (!targetYears.length) {
     return {
       status: 404,
-      body: lang === "jp" ? "指定年は存在しません" : "The specified year does not exist."
+      body: notFoundBody
     };
   }
 
