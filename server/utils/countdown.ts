@@ -54,6 +54,8 @@ export function handleCountdownRequest(
 
   const notFoundBody = [
     "404",
+    "ページが見つかりません",
+    "Page Not Found",
     "指定年は存在しません",
     "The specified year does not exist."
   ].join("\n");
