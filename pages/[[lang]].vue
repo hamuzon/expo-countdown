@@ -11,6 +11,14 @@ import { URL_SETTINGS } from "~/url-scheme.config.js";
 const route = useRoute();
 const router = useRouter();
 
+definePageMeta({
+  validate: (route) => {
+    const rawLang = route.params.lang;
+    const lang = Array.isArray(rawLang) ? rawLang[0] : rawLang;
+    return !lang || lang === "ja" || lang === "en";
+  },
+});
+
 // --- Static Data ---
 const expoDates = {
   2025: {

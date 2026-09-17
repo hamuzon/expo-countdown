@@ -11,18 +11,40 @@ import { URL_SETTINGS } from "~/url-scheme.config.js";
 const route = useRoute();
 const router = useRouter();
 
+definePageMeta({
+  validate: (route) => {
+    const validYears = ["2025", "2027", "2030"];
+    const pathParts = route.path.split("/").filter(Boolean);
+    const hasLegacyHints = Boolean(
+      route.query.year || route.query.lang ||
+      route.query.createPath || route.query.createpath ||
+      route.query.clearPath || route.query.clearpath,
+    );
+    if (hasLegacyHints) return true;
+    if (pathParts.length === 0) return true;
+    if (pathParts.length === 1) {
+      return validYears.includes(pathParts[0]) || pathParts[0] === "ja" || pathParts[0] === "en";
+    }
+    if (pathParts.length === 2) {
+      return validYears.includes(pathParts[0]) && (pathParts[1] === "ja" || pathParts[1] === "en");
+    }
+    return false;
+  },
+});
+
 // --- Route Validation ---
 function validateRouteOrThrow() {
   const pathParts = route.path.split("/").filter(Boolean);
-  const hasYearInPath = pathParts.some((part) => /^\d{4}$/.test(part));
+  const validYears = ["2025", "2027", "2030"];
+  const hasValidYear = pathParts.some((part) => validYears.includes(part));
   const isLangOnlyPath = pathParts.length === 1 && (pathParts[0] === "ja" || pathParts[0] === "en");
   const hasLegacyHints = Boolean(
     route.query.year || route.query.lang ||
     route.query.createPath || route.query.createpath ||
     route.query.clearPath || route.query.clearpath,
   );
-  if (pathParts.length > 0 && !hasYearInPath && !isLangOnlyPath && !hasLegacyHints) {
-    throw createError({ statusCode: 404, statusMessage: "Page Not Found" });
+  if (pathParts.length > 0 && !hasValidYear && !isLangOnlyPath && !hasLegacyHints) {
+    throw createError({ statusCode: 404, statusMessage: "Page Not Found", fatal: true });
   }
 }
 
