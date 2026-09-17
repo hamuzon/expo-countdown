@@ -2,7 +2,11 @@
   <div class="error-page">
     <div class="container">
       <h1>{{ error?.statusCode || 404 }}</h1>
-      <p class="message">
+      <p v-if="isCountdownPath" class="message">
+        指定年は存在しません<br>
+        <span>The specified year does not exist.</span>
+      </p>
+      <p v-else class="message">
         ページが見つかりません<br>
         <span>Sorry, Not Found.</span>
       </p>
@@ -33,6 +37,19 @@ const props = defineProps({
 
 const config = useRuntimeConfig();
 const requestUrl = useRequestURL();
+const route = useRoute();
+
+const isCountdownPath = computed(() => {
+  const path = props.error?.url || (process.client ? window.location.pathname : (route.path || requestUrl.pathname || ''));
+  const baseURL = String(config.app?.baseURL || '/');
+  const normalizedBase = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
+  let relativePath = path;
+  if (normalizedBase && normalizedBase !== '/' && path.startsWith(normalizedBase)) {
+    relativePath = path.slice(normalizedBase.length);
+  }
+  const pathParts = relativePath.split('/').filter(Boolean);
+  return pathParts.length > 0 && ['count', 'c', 'days', 'd'].includes(pathParts[0].toLowerCase());
+});
 
 const isGitHubPages = computed(() => {
   const hostname = process.client ? window.location.hostname : requestUrl.hostname;

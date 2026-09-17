@@ -53,7 +53,7 @@ export function handleCountdownRequest(
   } else if (yearFromPath && !expoDates[yearFromPath]) {
     return {
       status: 404,
-      body: lang === "jp" ? "指定年は存在しません" : "No valid year specified"
+      body: lang === "jp" ? "指定年は存在しません" : "The specified year does not exist."
     };
   } else {
     targetYears = Object.keys(expoDates);
@@ -62,7 +62,7 @@ export function handleCountdownRequest(
   if (!targetYears.length) {
     return {
       status: 404,
-      body: lang === "jp" ? "指定年は存在しません" : "No valid year specified"
+      body: lang === "jp" ? "指定年は存在しません" : "The specified year does not exist."
     };
   }
 
