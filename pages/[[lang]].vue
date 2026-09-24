@@ -15,7 +15,7 @@ definePageMeta({
   validate: (route) => {
     const rawLang = route.params.lang;
     const lang = Array.isArray(rawLang) ? rawLang[0] : rawLang;
-    return !lang || lang === "ja" || lang === "en";
+    return !lang || lang === "ja" || lang === "en" || ["2025", "2027", "2030"].includes(lang);
   },
 });
 
