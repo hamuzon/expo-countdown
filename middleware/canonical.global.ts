@@ -85,6 +85,8 @@ export default defineNuxtRouteMiddleware((to) => {
   const isYearOnly = pathParts.length === 1 && EXPO_YEARS.includes(pathParts[0]);
   const isYearAndLang = pathParts.length === 2 && EXPO_YEARS.includes(pathParts[0]) && (pathParts[1] === "ja" || pathParts[1] === "en");
 
+  if (isRoot && !hasLegacyHints) return;
+
   const isKnownRoute = isRoot || hasLegacyHints || isLangOnly || isYearOnly || isYearAndLang;
   if (!isKnownRoute) {
     // Unknown / invalid route (e.g. /foobar, /unknown, /9999/ja).
