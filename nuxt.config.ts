@@ -34,6 +34,26 @@ export default defineNuxtConfig({
       ],
       script: [
         {
+          innerHTML: `(() => {
+            const basePath = ${JSON.stringify(process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}` : '')};
+            const url = new URL(window.location.href);
+            const pathName = url.pathname.replace(/\\/+$/, '') || '/';
+            const isRepoPath = basePath && (pathName === basePath || pathName.startsWith(basePath + '/'));
+            const rootPath = isRepoPath ? basePath : '/';
+            if (pathName !== rootPath) return;
+
+            const year = url.searchParams.get('year');
+            if (!year || !/^\\d{4}$/.test(year)) return;
+
+            const requestedLang = url.searchParams.get('lang');
+            const lang = requestedLang === 'en' || requestedLang === 'ja' ? requestedLang : 'ja';
+            url.pathname = (rootPath === '/' ? '' : rootPath) + '/' + year + '/' + lang + '/';
+            url.searchParams.delete('year');
+            url.searchParams.delete('lang');
+            window.location.replace(url.toString());
+          })();`
+        },
+        {
           innerHTML: `if (window.location.hostname.endsWith('.')) { window.location.replace(window.location.href.replace(window.location.hostname, window.location.hostname.slice(0, -1))); }`
         }
       ]
