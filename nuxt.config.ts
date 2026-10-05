@@ -42,14 +42,18 @@ export default defineNuxtConfig({
             const rootPath = isRepoPath ? basePath : '/';
             if (pathName !== rootPath) return;
 
-            const year = url.searchParams.get('year');
+            const createPath = url.searchParams.get('createPath') ||
+              url.searchParams.get('createpath') ||
+              url.searchParams.get('clearPath') ||
+              url.searchParams.get('clearpath') || '';
+            const pathParts = createPath.split('/').filter(Boolean);
+            const year = url.searchParams.get('year') || pathParts.find((part) => /^\\d{4}$/.test(part));
             if (!year || !/^\\d{4}$/.test(year)) return;
 
-            const requestedLang = url.searchParams.get('lang');
+            const requestedLang = url.searchParams.get('lang') || pathParts.find((part) => part === 'en' || part === 'ja');
             const lang = requestedLang === 'en' || requestedLang === 'ja' ? requestedLang : 'ja';
             url.pathname = (rootPath === '/' ? '' : rootPath) + '/' + year + '/' + lang + '/';
-            url.searchParams.delete('year');
-            url.searchParams.delete('lang');
+            ['year', 'lang', 'createPath', 'createpath', 'clearPath', 'clearpath'].forEach((key) => url.searchParams.delete(key));
             window.location.replace(url.toString());
           })();`
         },
