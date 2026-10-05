@@ -111,6 +111,6 @@ export default defineNuxtRouteMiddleware((to) => {
 
   return navigateTo(
     { path: targetPath, query: cleanedQuery, hash: to.hash },
-    { replace: true, redirectCode: 301 },
+    { replace: true, redirectCode: 308 },
   );
 });
