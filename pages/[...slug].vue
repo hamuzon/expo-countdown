@@ -158,18 +158,16 @@ const getInitialState = () => {
     if (!resLang && process.client) {
       const reset = /^(1|on|true)$/i.test(String(q.reset || q.reboot || q.restart));
       if (!reset) {
-        resLang = localStorage.getItem("expoCountdownLang");
+        const storedLang = localStorage.getItem("expoCountdownLang");
+        resLang = storedLang === "jp" ? "ja" : storedLang;
       }
     }
   }
 
-  if (!resLang) {
-    resLang = "en";
-    if (process.client) {
-      if (navigator.language && navigator.language.toLowerCase().startsWith("ja")) {
-        resLang = "ja";
-      }
-    }
+  if (resLang !== "en" && resLang !== "ja") {
+    resLang = process.client && navigator.language?.toLowerCase().startsWith("ja")
+      ? "ja"
+      : "en";
   }
 
   // Save resolved state to localStorage immediately
