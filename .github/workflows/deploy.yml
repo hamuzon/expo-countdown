@@ -7,6 +7,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  GA_MEASUREMENT_ID: G-F8HVYVW05H
 
 permissions:
   contents: read
@@ -23,6 +24,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -51,6 +53,61 @@ jobs:
 
       - name: Build
         run: npm run generate
+
+      - name: Inject Google Analytics 4
+        run: |
+          if [[ ! "$GA_MEASUREMENT_ID" =~ ^G-[A-Z0-9]+$ ]]; then
+            echo "Invalid Google Analytics measurement ID"
+            exit 1
+          fi
+
+          export GA_ID="$GA_MEASUREMENT_ID"
+
+          python3 <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          ga_id = os.environ["GA_ID"]
+          output = Path(".output/public")
+
+          if not output.is_dir():
+              raise SystemExit("Error: .output/public does not exist.")
+
+          script = f"""
+          <!-- Google tag (gtag.js) -->
+          <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
+          <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){{dataLayer.push(arguments);}}
+            gtag('js', new Date());
+            gtag('config', '{ga_id}');
+          </script>
+          """
+
+          count = 0
+
+          for path in output.rglob("*.html"):
+              html = path.read_text(encoding="utf-8")
+
+              # Prevent duplicate Google Analytics tags
+              if "googletagmanager.com/gtag/js" in html:
+                  print(f"Skipped (GA already exists): {path}")
+                  continue
+
+              # Insert Google Analytics after the opening head tag
+              match = re.search(r"<head(?:\s[^>]*)?>", html, re.IGNORECASE)
+
+              if not match:
+                  print(f"Skipped (no head): {path}")
+                  continue
+
+              html = html[:match.end()] + "\n" + script + html[match.end():]
+              path.write_text(html, encoding="utf-8")
+              count += 1
+
+          print(f"Google Analytics added to {count} HTML files.")
+          PY
 
       - name: Post-process and cleanup deployment artifact
         run: |
