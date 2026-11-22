@@ -6,6 +6,12 @@ export default defineNuxtConfig({
     'pages/index.vue'
   ],
   ssr: true, // Enabled for OGP pre-rendering on GitHub Pages
+  // Nuxt 4.6.4 resolves `devServer.host` to `{}` when no host env var is set,
+  // which makes `nuxt dev` crash in `options.hostname.toLowerCase()`.
+  // Always resolve it to a string so the dev server can start.
+  devServer: {
+    host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || 'localhost'
+  },
   experimental: {
     appManifest: false
   },
