@@ -13,7 +13,13 @@ export default defineNuxtConfig({
     host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || 'localhost'
   },
   experimental: {
-    appManifest: false
+    appManifest: false,
+    // Nuxt 4.6 emits an <script type="importmap"> for the entry chunk. Firefox
+    // rejects import maps that appear after any module script has started
+    // loading, and Cloudflare injects its own module script before ours, so the
+    // import map is ignored and `#entry` imports fail. Let Vite emit real chunk
+    // URLs instead.
+    entryImportMap: false
   },
   app: {
     baseURL: process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/` : '/',
